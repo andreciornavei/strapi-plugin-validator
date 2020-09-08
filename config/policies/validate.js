@@ -91,7 +91,7 @@ const buildRules = (attributes) => {
       //validate for files
       const rules = []
       if (attr.required) rules.push("required")
-      rules.push(`file:${attr.allowedTypes.join(",")}`)
+      rules.push(`file:${attr.allowedTypes ? attr.allowedTypes.join(",") : ""}`)
       if (rules.length > 0) fields[attrName] = rules.join("|")
     } else if (attr.type) {
       const rules = []
