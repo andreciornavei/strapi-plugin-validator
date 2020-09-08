@@ -104,6 +104,11 @@ lodash.set@^4.3.2:
   resolved "https://registry.yarnpkg.com/lodash.set/-/lodash.set-4.3.2.tgz#d8757b1da807dde24816b0d6a84bea1a76230b23"
   integrity sha1-2HV7HagH3eJIFrDWqEvqGnYjCyM=
 
+mime@^2.4.6:
+  version "2.4.6"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-2.4.6.tgz#e5b407c90db442f2beb5b162373d07b69affa4d1"
+  integrity sha512-RZKhC3EmpBchfTGBVb8fb+RL2cWyw/32lshnsETttkBAyAUXSGHxbEJWWRXc751DrIxG1q04b8QwMbAwkRPpUA==
+
 pluralize@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-8.0.0.tgz#1a6fa16a38d12a1901e0320fa017051c539ce3b1"
@@ -118,6 +123,11 @@ striptags@^3.1.1:
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/striptags/-/striptags-3.1.1.tgz#c8c3e7fdd6fb4bb3a32a3b752e5b5e3e38093ebd"
   integrity sha1-yMPn/db7S7OjKjt1LltePjgJPr0=
+
+validator-brazil@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/validator-brazil/-/validator-brazil-1.2.2.tgz#19f88b4606c5ff0da9372950d70f2f3692997c3b"
+  integrity sha512-AsquEjcOQxol7IWshCaqzvOEEsdDE9gANueXQbtWUUaozAxZN4tYnL0vreMsuApK/IvltMP2T09VQpVgaV1QYw==
 
 validator@^12.1.0:
   version "12.2.0"

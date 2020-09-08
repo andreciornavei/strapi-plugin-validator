@@ -8,7 +8,9 @@
     "description": "Make great validations easy."
   },
   "dependencies": {
-    "indicative": "^7.4.4"
+    "indicative": "^7.4.4",
+    "mime": "^2.4.6",
+    "validator-brazil": "^1.2.2"
   },
   "author": {
     "name": "A Strapi developer",

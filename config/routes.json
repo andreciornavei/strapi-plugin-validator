@@ -7,6 +7,14 @@
       "config": {
         "policies": []
       }
+    },
+    {
+      "method": "GET",
+      "path": "/validators/:validator",
+      "handler": "CrudValdiators.findOne",
+      "config": {
+        "policies": []
+      }
     }
   ]
 }
