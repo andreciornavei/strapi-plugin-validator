@@ -141,7 +141,6 @@ const resolveModule = async (ctx, module) => {
       const settings = _.get(strapi, validator);
       const rules = resolveSettings(settings)
       try {
-        console.log(rules)
         let data = {}
         if (ctx.is('multipart')) {
           const multipart = parseMultipartData(ctx);
