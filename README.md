@@ -113,6 +113,8 @@ Finally, we need to append the validator to some route who need to pass by valid
 
 Here, i has copied all content of routes of __`users-permissions`__ plugin and added a new property __`validator`__ inside __`routes.[0].config`__, basically the value of __`validator`__ property is the path to the __`validators.json`__ and the __`identifier`__ of validator inside this file on the end.
 
+In additional, you can use the property __`validator_ignore_required`__ as `true` to indicate that this route doesn't need fields to be required, so in your requests for update data, any field will not be required and you can pass only needed fields to update.
+
 ---
 
 ## The frontend result.

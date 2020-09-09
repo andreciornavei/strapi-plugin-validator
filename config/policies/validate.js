@@ -12,10 +12,14 @@ require("./customs/brphone")(extend)
 require("./customs/file")(extend)
 
 
-const resolveSettings = (settings) => {
+const removeRule = (rules, rule) => {
+  rules.indexOf(rule) !== -1 && rules.splice(rules.indexOf(rule), 1)
+}
+
+const resolveSettings = (settings, ignoreRequired) => {
   return mergeRules(
-    settings.model ? resolveModel(settings.model) : {},
-    settings.rules ? resolveRules(settings.rules) : {}
+    settings.model ? resolveModel(settings.model, ignoreRequired) : {},
+    settings.rules ? resolveRules(settings.rules, ignoreRequired) : {}
   )
 }
 
@@ -46,39 +50,44 @@ const mergeRules = (fieldsModel, fieldsJson) => {
   return merge
 }
 
-const resolveModel = (model) => {
+const resolveModel = (model, ignoreRequired) => {
   if (object = _.get(strapi, model)) {
-    return buildRules(object.attributes)
+    return buildRules(object.attributes, ignoreRequired)
   }
   return undefined
 }
 
-const resolveRules = (rules) => {
+const resolveRules = (rules, ignoreRequired) => {
   const fields = {}
   for (const rule in rules) {
     if (typeof rules[rule] === "string") {
-      fields[rule] = rules[rule]
+      const processRule = rules[rule] ? rules[rule].split("|") : []
+      if (processRule.includes("required") && ignoreRequired == true) removeRule(processRule, "required")
+      fields[rule] = processRule.join("|")      
     } else if (typeof rules[rule] === "object") {
       if (rules[rule].validator) {
         const processRule = rules[rule].rule ? rules[rule].rule.split("|") : []
         if (!processRule.includes("object")) processRule.push("object")
+        if (processRule.includes("required") && ignoreRequired == true) removeRule(processRule, "required")
         fields[rule] = processRule.join("|")
         const settings = _.get(strapi, rules[rule].validator);
         if (settings) {
-          const deepFields = resolveSettings(settings)
+          const deepFields = resolveSettings(settings, ignoreRequired)
           for (const deepField in deepFields) {
             fields[`${rule}.${deepField}`] = deepFields[deepField]
           }
         }
       } else if (rules[rule].rule) {
-        fields[rule] = rules[rule].rule
+        const processRule = rules[rule].rule ? rules[rule].rule.split("|") : []
+        if (processRule.includes("required") && ignoreRequired == true) removeRule(processRule, "required")
+        fields[rule] = processRule.join("|")
       }
     }
   }
   return fields
 }
 
-const buildRules = (attributes) => {
+const buildRules = (attributes, ignoreRequired) => {
   const fields = {}
   for (const attrName in attributes) {
     const attr = attributes[attrName];
@@ -90,12 +99,12 @@ const buildRules = (attributes) => {
     ) {
       //validate for files
       const rules = []
-      if (attr.required) rules.push("required")
+      if (attr.required && ignoreRequired == false) rules.push("required")
       rules.push(`file:${attr.allowedTypes ? attr.allowedTypes.join(",") : ""}`)
       if (rules.length > 0) fields[attrName] = rules.join("|")
     } else if (attr.type) {
       const rules = []
-      if (attr.required) rules.push("required")
+      if (attr.required && ignoreRequired == false) rules.push("required")
       if (attr.maxLength) rules.push(`max:${attr.maxLength}`)
       if (attr.minLength) rules.push(`min:${attr.minLength}`)
       switch (attr.type) {
@@ -138,8 +147,9 @@ const resolveModule = async (ctx, module) => {
       _.get(route, 'method').toLowerCase() === ctxVerb.toLowerCase()
     ) {
       const validator = _.get(route.config, 'validator')
+      const ignoreRequired = _.get(route.config, 'validator_ignore_required') || false
       const settings = _.get(strapi, validator);
-      const rules = resolveSettings(settings)
+      const rules = resolveSettings(settings, ignoreRequired)
       try {
         let data = {}
         if (ctx.is('multipart')) {
@@ -169,7 +179,6 @@ module.exports = async (ctx, next) => {
   if (apiModuleResolved) {
     return apiModuleResolved === true ? await next() : apiModuleResolved;
   }
-
   if (strapi.plugins) {
     for (pluginKey in strapi.plugins) {
       const pluginModuleResolved = await resolveModule(ctx, strapi.plugins[pluginKey])
