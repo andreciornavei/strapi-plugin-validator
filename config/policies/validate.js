@@ -2,6 +2,7 @@ const _ = require('lodash');
 const { extend, validateAll } = require('indicative/validator')
 const { parseMultipartData } = require('strapi-utils');
 require("./customs/unique")(extend)
+require("./customs/exists")(extend)
 require("./customs/datetime")(extend)
 require("./customs/time")(extend)
 require("./customs/cpf")(extend)
