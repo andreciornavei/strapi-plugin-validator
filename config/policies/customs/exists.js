@@ -1,4 +1,5 @@
 const { getValue, skippable } = require('indicative-utils')
+const mongoose = require("mongoose")
 
 module.exports = (extend) => {
   extend('exists', {
@@ -14,10 +15,11 @@ module.exports = (extend) => {
       if (skippable(fieldValue, field, config)) {
         return true
       }
-      const records = await strapi.query(args[0]).count({
-        [args[1]]: String(fieldValue),
+      const record = await strapi.query(args[0]).model.findOne({
+        // "_id": mongoose.Types.ObjectId(fieldValue),
+        [args[1]]: fieldValue,
       });
-      if (!records || records == 0) {
+      if (!record) {
         return false
       }
       return true
