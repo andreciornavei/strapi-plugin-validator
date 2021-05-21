@@ -195,6 +195,23 @@ This plugin implements other usually validations that indicative doest support b
 >
 > &nbsp;
 ---
+> ### ___`available`___
+>_Like unexists rule, it checks if the requested field value does not exists inside some content-type and return an error if this value is founded on database, but with differencial that if you are trying to update a record that belongs to you with the same value, it will allow the update, preventing a throwing error becouse you self record already exists._
+>
+> `Example.:` _Check if the email is available on update, but allow you to update its email if it belongs to you._
+> ```json
+>"rules": {
+>    "email": [
+>      "available:email,user,users-permissions"
+>    ]
+>}
+> ```
+>* `args[0]` : The content-type column name
+>* `args[1]` : The content-type name
+>* `args[2]` : Is optional, verify the plugin where  content-type resides
+>
+> &nbsp;
+---
 > ### ___`exists`___
 > _It checks if the requested field value exists inside some content-type and return an error if this value is not founded on database._
 >

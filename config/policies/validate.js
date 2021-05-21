@@ -14,6 +14,7 @@ require("./customs/file")(extend)
 require("./customs/empty")(extend)
 require("./customs/objectid")(extend)
 require("./customs/invalid_when")(extend)
+require("./customs/available")(extend)
 
 const input = (ctx) => {
   if (ctx.is('multipart')) {
@@ -110,7 +111,10 @@ const resolveModule = async (ctx, module) => {
     const data = input(ctx)
     await validateAll({
       ...data,
-      _state: _.get(ctx, "state.user"),
+      _ctx: {
+        user: _.get(ctx, "state.user"),
+        params: _.get(ctx, "params")
+      },
     }, rules, messages || {});
     return true;
   } catch (error) {
