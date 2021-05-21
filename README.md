@@ -194,7 +194,7 @@ This plugin implements other usually validations that indicative doest support b
 >* `args[2]` : Is optional, verify the plugin where  content-type resides
 >
 > &nbsp;
-
+---
 > ### ___`exists`___
 > _It checks if the requested field value exists inside some content-type and return an error if this value is not founded on database._
 >
@@ -211,7 +211,7 @@ This plugin implements other usually validations that indicative doest support b
 > * `args[2]` : Is optional, verify the plugin where  content-type resides
 >
 > &nbsp;
-
+---
 > ### ___`empty`___
 > _It checks if the requested field value is empty and return an error if it is true._
 >
@@ -225,7 +225,7 @@ This plugin implements other usually validations that indicative doest support b
 >  ```
 >
 > &nbsp;
-
+---
 > ### ___`invalid_when`___
 > _It throws an error if the first parameter (another field on the payload) has some of one values on the next other (n params)._
 >
@@ -242,7 +242,7 @@ This plugin implements other usually validations that indicative doest support b
 > * `args[n]` : More values to be compared
 >
 > &nbsp;
-
+---
 > ### ___`objectid`___
 > _It throws an error if the value passed is not a valid ObjectId (validated by mongoose)._
 >
@@ -256,7 +256,7 @@ This plugin implements other usually validations that indicative doest support b
 >  ```
 >
 > &nbsp;
-
+---
 > ### ___`file`___
 > _It throws an error if the value passed is not a valid file._
 >
@@ -271,7 +271,7 @@ This plugin implements other usually validations that indicative doest support b
 > * `args[0]` : The file type (image|video|any)
 >
 > &nbsp;
-
+---
 > ### ___`datetime`___
 > _It throws an error if the value passed does not match a specified valid date pattern._
 >
@@ -286,7 +286,7 @@ This plugin implements other usually validations that indicative doest support b
 > * `args[0]` : The date pattern to match (default is yyyy-MM-dd HH:mm)
 >
 > &nbsp;
-
+---
 > ### ___`e164`___
 > _It throws an error if the value passed does not match the global format pattern e.164 for phones._
 >
@@ -300,7 +300,7 @@ This plugin implements other usually validations that indicative doest support b
 >  ```
 >
 > &nbsp;
-
+---
 > ### ___`brphone`___
 > _It throws an error if the value passed does not match the brazilian phone number pattern "0000000000" or "00900000000" | (without mask)._
 >
@@ -314,7 +314,7 @@ This plugin implements other usually validations that indicative doest support b
 >  ```
 >
 > &nbsp;
-
+---
 > ### ___`cep`___
 > _It throws an error if the value passed does not match the brazilian zipcode number pattern "00000000" | (without mask)._
 >
@@ -328,7 +328,7 @@ This plugin implements other usually validations that indicative doest support b
 >  ```
 >
 > &nbsp;
-
+---
 > ### ___`cnpj`___
 > _It throws an error if the value passed was not a valid brazilian company registry number (CNPJ) | (without mask)._
 >
@@ -342,8 +342,7 @@ This plugin implements other usually validations that indicative doest support b
 >  ```
 >
 > &nbsp;
-
-
+---
 > ### ___`cpf`___
 > _It throws an error if the value passed was not a valid  brazilian personal registry number (CPF) | (without mask)._
 >
@@ -357,7 +356,7 @@ This plugin implements other usually validations that indicative doest support b
 >  ```
 >
 > &nbsp;
-
+---
 > ### ___`cpfj`___
 > _It throws an error if the value passed was not a valid  brazilian personal registry number (CPF) or brazilian company registry number (CNPJ) | (without mask)._
 >
