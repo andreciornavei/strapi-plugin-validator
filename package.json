@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "A strapi plugin that implements validations easier with json on routes definition.",
   "dependencies": {
-    "date-fns": "^2.21.3",
+    "date-fns": "2.21.3",
     "indicative": "7.4.4",
-    "lodash": "^4.17.21",
+    "lodash": "4.17.21",
     "mime": "2.4.6",
-    "mongoose": "^5.12.10",
+    "mongoose": "5.12.10",
     "phone": "^2.4.21",
     "validator-brazil": "1.2.2"
   },
