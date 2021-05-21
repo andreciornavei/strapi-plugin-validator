@@ -1,11 +1,11 @@
 const { getValue, skippable } = require('indicative-utils')
 
 module.exports = (extend) => {
-  extend('unique', {
+  extend('unexists', {
     async: true,
     compile(args) {
       if (args.length < 2 || args.length > 3) {
-        throw new Error('Unique rule needs the column name, table and a optional module')
+        throw new Error('Unexists rule needs the column name, table and a optional module')
       }
       return args
     },

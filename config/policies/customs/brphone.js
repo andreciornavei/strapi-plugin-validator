@@ -33,7 +33,6 @@ module.exports = (extend) => {
         }
         return isPhone(fieldValue)
       } catch (error) {
-        console.log("validatre error ", error)
         return false;
       }
     }

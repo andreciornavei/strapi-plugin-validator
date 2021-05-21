@@ -1,12 +1,11 @@
 const { getValue, skippable } = require('indicative-utils')
-const mongoose = require("mongoose")
 
 module.exports = (extend) => {
   extend('exists', {
     async: true,
     compile(args) {
-      if (args.length != 2) {
-        throw new Error('Exists rule needs the column collection and field')
+      if (args.length < 2 || args.length > 3) {
+        throw new Error('Exists rule needs the column name, table and a optional module')
       }
       return args
     },
@@ -15,11 +14,11 @@ module.exports = (extend) => {
       if (skippable(fieldValue, field, config)) {
         return true
       }
-      const record = await strapi.query(args[0]).model.findOne({
-        // "_id": mongoose.Types.ObjectId(fieldValue),
-        [args[1]]: fieldValue,
+      const module = args[2] == undefined || args[2] == "api" ? null : args[2]
+      const content = await strapi.query(args[1], module).findOne({
+        [args[0]]: fieldValue,
       });
-      if (!record) {
+      if (!content) {
         return false
       }
       return true

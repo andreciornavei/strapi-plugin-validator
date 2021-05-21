@@ -1,9 +1,8 @@
-
 const { getValue, skippable } = require('indicative-utils')
-const { isCpf } = require("validator-brazil");
+var ObjectId = require('mongoose').Types.ObjectId;
 
 module.exports = (extend) => {
-  extend('cpf', {
+  extend('objectid', {
     async: true,
     async validate(data, field, args, config) {
       try {
@@ -11,7 +10,7 @@ module.exports = (extend) => {
         if (skippable(fieldValue, field, config)) {
           return true
         }
-        return isCpf(fieldValue)
+        return ObjectId.isValid(fieldValue)
       } catch (error) {
         return false;
       }

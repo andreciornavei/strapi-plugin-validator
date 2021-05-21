@@ -13,9 +13,9 @@ module.exports = (extend) => {
         const mimeType = mime.getType(fieldValue.name)
         if (mimeType) {
           const type = mimeType.split("/")[0]
-          if (type == "video" && args.includes("videos")) return true;
-          if (type == "image" && args.includes("images")) return true;
-          if (!["video", "image"].includes(type) && args.includes("files")) return true;
+          if (type == "video" && args.includes("video")) return true;
+          if (type == "image" && args.includes("image")) return true;
+          if (!["video", "image"].includes(type) && args.includes("any")) return true;
         }
       } catch (error) {
         return false;

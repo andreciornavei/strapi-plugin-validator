@@ -1,9 +1,8 @@
-
 const { getValue, skippable } = require('indicative-utils')
-const { isCpf } = require("validator-brazil");
+const phone = require('phone');
 
 module.exports = (extend) => {
-  extend('cpf', {
+  extend('e164', {
     async: true,
     async validate(data, field, args, config) {
       try {
@@ -11,7 +10,9 @@ module.exports = (extend) => {
         if (skippable(fieldValue, field, config)) {
           return true
         }
-        return isCpf(fieldValue)
+        const phoneData = phone(fieldValue);
+        if (phoneData.length == 0) throw Error("Phone was not validated")
+        return true
       } catch (error) {
         return false;
       }

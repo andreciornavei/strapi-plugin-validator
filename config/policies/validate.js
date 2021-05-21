@@ -1,192 +1,145 @@
 const _ = require('lodash');
 const { extend, validateAll } = require('indicative/validator')
 const { parseMultipartData } = require('strapi-utils');
-require("./customs/unique")(extend)
 require("./customs/exists")(extend)
+require("./customs/unexists")(extend)
 require("./customs/datetime")(extend)
-require("./customs/time")(extend)
 require("./customs/cpf")(extend)
 require("./customs/cnpj")(extend)
 require("./customs/cpfj")(extend)
 require("./customs/cep")(extend)
 require("./customs/brphone")(extend)
+require("./customs/e164")(extend)
 require("./customs/file")(extend)
+require("./customs/empty")(extend)
+require("./customs/objectid")(extend)
+require("./customs/invalid_when")(extend)
 
+const input = (ctx) => {
+  if (ctx.is('multipart')) {
+    const multipart = parseMultipartData(ctx);
+    return { ...multipart.data, ...multipart.files }
+  } else {
+    return _.get(ctx, "request.body", {})
+  }
+}
 
 const removeRule = (rules, rule) => {
   rules.indexOf(rule) !== -1 && rules.splice(rules.indexOf(rule), 1)
 }
 
 const resolveSettings = (settings, ignoreRequired) => {
-  return mergeRules(
-    settings.model ? resolveModel(settings.model, ignoreRequired) : {},
-    settings.rules ? resolveRules(settings.rules, ignoreRequired) : {}
-  )
-}
-
-const mergeRules = (fieldsModel, fieldsJson) => {
-  const merge = {}
-  const fields = [...new Set([...Object.keys(fieldsModel), ...Object.keys(fieldsJson)])]
-  for (const field of fields) {
-    if (Object.keys(fieldsModel).includes(field) && Object.keys(fieldsJson).includes(field)) {
-      //if both model and field config has the same rule, keeps the file override
-      const merging = {}
-      const modelRules = fieldsModel[field].split("|").map(f => f.split(":"))
-      const jsonRules = fieldsJson[field].split("|").map(f => f.split(":"))
-      for (const rule of modelRules) {
-        merging[rule[0]] = rule.join(":")
-      }
-      for (const rule of jsonRules) {
-        merging[rule[0]] = rule.join(":")
-      }
-      merge[field] = Object.values(merging).join("|")
-    } else if (Object.keys(fieldsModel).includes(field)) {
-      // if only model has rules, keep model
-      merge[field] = fieldsModel[field]
-    } else if (Object.keys(fieldsJson).includes(field)) {
-      // if only json has rules, keep json
-      merge[field] = fieldsJson[field]
-    }
+  const { fields, messages } = settings.rules ? resolveRules(settings.rules, ignoreRequired) : { fields: {}, messages: {} }
+  return {
+    rules: fields,
+    messages: messages
   }
-  return merge
-}
-
-const resolveModel = (model, ignoreRequired) => {
-  if (object = _.get(strapi, model)) {
-    return buildRules(object.attributes, ignoreRequired)
-  }
-  return undefined
 }
 
 const resolveRules = (rules, ignoreRequired) => {
   const fields = {}
+  const messages = {}
   for (const rule in rules) {
-    if (typeof rules[rule] === "string") {
-      const processRule = rules[rule] ? rules[rule].split("|") : []
-      if (processRule.includes("required") && ignoreRequired == true) removeRule(processRule, "required")
-      fields[rule] = processRule.join("|")      
-    } else if (typeof rules[rule] === "object") {
-      if (rules[rule].validator) {
-        const processRule = rules[rule].rule ? rules[rule].rule.split("|") : []
-        if (!processRule.includes("object")) processRule.push("object")
-        if (processRule.includes("required") && ignoreRequired == true) removeRule(processRule, "required")
-        fields[rule] = processRule.join("|")
-        const settings = _.get(strapi, rules[rule].validator);
-        if (settings) {
-          const deepFields = resolveSettings(settings, ignoreRequired)
-          for (const deepField in deepFields) {
-            fields[`${rule}.${deepField}`] = deepFields[deepField]
+    // Check each type of rules based on type variable
+    // 1 - String - [is a reference to other file validation]
+    // 2 - Array - [is an array of values of rules for this field]
+    // 3 - Object - [is a key/valu map where key is the rule and value is the custom message]
+    if (_.isString(rules[rule])) {
+      const appendRules = rules[rule].split("|")
+      const ref = appendRules.shift() // remove the first element (the reference) and get the rest (rules)
+      if (!appendRules.includes("object")) appendRules.push("object")
+      if (appendRules.includes("required") && ignoreRequired == true) removeRule(appendRules, "required")
+      fields[rule] = appendRules.join("|")
+      if (settings = _.get(strapi, ref)) {
+        const { rules: deepRules, messages: deepMessages } = resolveSettings(settings, ignoreRequired)
+        if (Object.keys(deepRules).length > 0) {
+          for (const deepRule in deepRules) {
+            fields[`${rule}.${deepRule}`] = deepRules[deepRule]
           }
+          _.forEach(deepMessages, (deepMessage, deepKey) => {
+            messages[`${rule}.${deepKey}`] = deepMessage
+          })
         }
-      } else if (rules[rule].rule) {
-        const processRule = rules[rule].rule ? rules[rule].rule.split("|") : []
-        if (processRule.includes("required") && ignoreRequired == true) removeRule(processRule, "required")
-        fields[rule] = processRule.join("|")
+      }
+    } else if (_.isArray(rules[rule])) {
+      const appendRules = rules[rule]
+      if (appendRules.includes("required") && ignoreRequired == true) removeRule(appendRules, "required")
+      if (appendRules.length > 0) fields[rule] = appendRules.join("|")
+    } else if (_.isObject(rules[rule])) {
+      const appendRules = Object.keys(rules[rule])
+      if (appendRules.includes("required") && ignoreRequired == true) removeRule(appendRules, "required")
+      if (appendRules.length > 0) {
+        _.forEach(appendRules, (ruleItem) => {
+          messages[`${rule}.${ruleItem.split(/:(.+)/)[0]}`] = rules[rule][ruleItem]
+        })
+        fields[rule] = appendRules.join("|")
       }
     }
   }
-  return fields
+  return { fields: fields, messages: messages }
 }
-
-const buildRules = (attributes, ignoreRequired) => {
-  const fields = {}
-  for (const attrName in attributes) {
-    const attr = attributes[attrName];
-    if (
-      (
-        attr.collection && attr.collection == "file" ||
-        attr.model && attr.model == "file"
-      ) && attr.plugin && attr.plugin == "upload"
-    ) {
-      //validate for files
-      const rules = []
-      if (attr.required && ignoreRequired == false) rules.push("required")
-      rules.push(`file:${attr.allowedTypes ? attr.allowedTypes.join(",") : ""}`)
-      if (rules.length > 0) fields[attrName] = rules.join("|")
-    } else if (attr.type) {
-      const rules = []
-      if (attr.required && ignoreRequired == false) rules.push("required")
-      if (attr.maxLength) rules.push(`max:${attr.maxLength}`)
-      if (attr.minLength) rules.push(`min:${attr.minLength}`)
-      switch (attr.type) {
-        case "decimal":
-          rules.push("float")
-          if (attr.min) rules.push(`above:${attr.min}`)
-          if (attr.max) rules.push(`under:${attr.max}`)
-          break;
-        case "enumeration":
-          rules.push(`in:${attr.enum.join(",")}`)
-          break;
-        case "boolean":
-          rules.push("boolean")
-          break;
-        case "date":
-          rules.push("date")
-          break;
-        case "datetime":
-          rules.push("datetime")
-          break;
-        case "time":
-          rules.push("time")
-          break;
-      }
-      if (rules.length > 0) fields[attrName] = rules.join("|")
-    }
-  }
-  return fields;
-}
-
 
 const resolveModule = async (ctx, module) => {
+  // Get the verb and endpoint from route to search for correspondent
+  // route in configs
   const [ctxVerb, ctxEndpoint] = ctx.request.route.endpoint.split(" ");
-  for (routeKey in module.config.routes) {
-    const route = module.config.routes[routeKey]
-    if (
-      _.get(route.config, 'validator') &&
-      _.get(route, 'path') === ctxEndpoint &&
-      _.get(route, 'method') &&
-      _.get(route, 'method').toLowerCase() === ctxVerb.toLowerCase()
-    ) {
-      const validator = _.get(route.config, 'validator')
-      const ignoreRequired = _.get(route.config, 'validator_ignore_required') || false
-      const settings = _.get(strapi, validator);
-      const rules = resolveSettings(settings, ignoreRequired)
-      try {
-        let data = {}
-        if (ctx.is('multipart')) {
-          const multipart = parseMultipartData(ctx);
-          data = { ...multipart.data, ...multipart.files }
-        } else {
-          data = ctx.request.body || {}
-        }
-        await validateAll(data || {}, rules);
-        return true;
-      } catch (error) {
-        ctx.status = 400
-        ctx.body = {
-          "message": settings.message || "Bad Request",
-          "fields": error
-        }
-        return ctx
-      }
-    }
+  // Check if module.config.routes is an object to continue
+  if (!_.isObject(module.config.routes)) return "module.config.routes is not an valid object."
+  // Find the correspondent route for this request
+  const route = Object.values(module.config.routes).find(route => {
+    return (
+      _.get(route, "config.validate") &&
+      ctxEndpoint === _.get(route, "path") &&
+      ctxVerb.toLowerCase() === _.get(route, 'method').toLowerCase()
+    )
+  })
+  // Check if validation route exists to continue
+  if (!route) return "the validation route does not exists."
+  const validation = _.get(route, "config.validate")
+  const ignoreRequired = _.get(route, "config.validate_ignore_required", false)
+  const settings = _.isString(validation) ? _.get(strapi, validation) : _.isObject(validation) ? validation : undefined
+  // Check if settings variable is a valid validator to continue
+  if (!settings) return "validation settings is not valid."
+  const { rules, messages } = resolveSettings(settings, ignoreRequired)
+  // remove rules that doesn't have any validation
+  for (const rule in rules) {
+    if (rules[rule].legnth == 0) delete rules[rule]
   }
-  return undefined;
+  // Try to validate inputs applying rules
+  try {
+    const data = input(ctx)
+    await validateAll({
+      ...data,
+      _state: _.get(ctx, "state.user"),
+    }, rules, messages || {});
+    return true;
+  } catch (error) {
+    if (_.get(error, "message")) {
+      strapi.log.error(error.message)
+      ctx.badImplementation(error.message)
+    } else {
+      ctx.badRequest(settings.message || "Invalid input data", error)
+    }
+    return ctx
+  }
 }
 
-
 module.exports = async (ctx, next) => {
+  let errorMessage = null
   const apiModuleResolved = resolved = await resolveModule(ctx, strapi)
-  if (apiModuleResolved) {
+  if (_.isString(apiModuleResolved)) errorMessage = apiModuleResolved
+  if (!_.isString(apiModuleResolved)) {
     return apiModuleResolved === true ? await next() : apiModuleResolved;
   }
   if (strapi.plugins) {
     for (pluginKey in strapi.plugins) {
       const pluginModuleResolved = await resolveModule(ctx, strapi.plugins[pluginKey])
-      if (pluginModuleResolved) {
+      if (_.isString(pluginModuleResolved)) errorMessage = pluginModuleResolved
+      if (!_.isString(pluginModuleResolved)) {
         return pluginModuleResolved === true ? await next() : apiModuleResolved;
       }
     }
   }
+  if (errorMessage) return ctx.badRequest(errorMessage)
   return await next();
 };

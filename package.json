@@ -1,28 +1,42 @@
 {
   "name": "strapi-plugin-validator",
-  "version": "0.0.0",
-  "description": "This is the description of the plugin.",
-  "strapi": {
-    "name": "Validator",
-    "icon": "lock",
-    "description": "Make great validations easy."
-  },
+  "version": "1.0.0",
+  "description": "A strapi plugin that implements validations easier with json on routes definition.",
   "dependencies": {
-    "indicative": "^7.4.4",
-    "mime": "^2.4.6",
-    "validator-brazil": "^1.2.2"
+    "date-fns": "^2.21.3",
+    "indicative": "7.4.4",
+    "lodash": "^4.17.21",
+    "mime": "2.4.6",
+    "mongoose": "^5.12.10",
+    "phone": "^2.4.21",
+    "validator-brazil": "1.2.2"
   },
   "author": {
-    "name": "A Strapi developer",
-    "email": "",
-    "url": ""
+    "name": "André Ciornavei",
+    "email": "andre.ciornavei@gmail.com",
+    "url": "https://github.com/andreciornavei"
   },
   "maintainers": [
     {
-      "name": "A Strapi developer",
-      "email": "",
-      "url": ""
+      "name": "André Ciornavei",
+      "email": "andre.ciornavei@gmail.com",
+      "url": "https://github.com/andreciornavei"
     }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/andreciornavei/strapi-plugin-validator.git"
+  },
+  "homepage": "https://github.com/andreciornavei/strapi-plugin-validator#readme",
+  "bugs": {
+    "url": "https://github.com/andreciornavei/strapi-plugin-validator/issues"
+  },
+  "keywords": [
+    "node",
+    "plugin",
+    "strapi",
+    "sanitizor",
+    "validator"
   ],
   "engines": {
     "node": ">=10.0.0",
