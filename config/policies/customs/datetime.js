@@ -14,13 +14,6 @@ module.exports = (extend) => {
       if (!isValid(parseDate)) {
         return false
       }
-      const datesplit = fieldValue.split(" ")
-      if (datesplit.length != 2) return false
-      const regex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])(:[0-5][0-9])?$/
-      if (!regex.test(datesplit[1])) {
-        return false
-      }
-
       return true
     }
   })
