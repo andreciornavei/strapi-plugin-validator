@@ -1,6 +1,6 @@
 {
   "name": "strapi-plugin-validator",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "A strapi plugin that implements validations easier with json on routes definition.",
   "dependencies": {
     "date-fns": "2.21.3",
