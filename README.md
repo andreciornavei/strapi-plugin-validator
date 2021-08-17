@@ -212,6 +212,19 @@ This plugin implements other usually validations that indicative doest support b
 >
 > &nbsp;
 ---
+> ### ___`valid_password`___
+> _It throws an error if the field does not contains the same password as the authenticated user (user.users-permissions) plugin. It can helps you to update password without need to create policies or new controllers._
+>
+>  ```json
+> "rules": {
+>     "current_password": {
+>       "valid_password": "The current password provided is invalid.",
+>     }
+> }
+>  ```
+>
+> &nbsp;
+---
 > ### ___`exists`___
 > _It checks if the requested field value exists inside some content-type and return an error if this value is not founded on database._
 >

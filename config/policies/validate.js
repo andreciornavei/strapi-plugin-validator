@@ -15,6 +15,8 @@ require("./customs/empty")(extend)
 require("./customs/objectid")(extend)
 require("./customs/invalid_when")(extend)
 require("./customs/available")(extend)
+require("./customs/valid_password")(extend)
+
 
 const input = (ctx) => {
   if (ctx.is('multipart')) {
