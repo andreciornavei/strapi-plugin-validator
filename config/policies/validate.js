@@ -31,6 +31,30 @@ const removeRule = (rules, rule) => {
   rules.indexOf(rule) !== -1 && rules.splice(rules.indexOf(rule), 1)
 }
 
+const resolveErrorMessages = (errors, settings) => {
+  const routeCustomMessages = _.get(settings, `customMessages`, {})
+  const globalCustomMessages = _.get(strapi, `config.validators.customMessages`, {})
+  const customMessages = _.merge(globalCustomMessages, routeCustomMessages)
+
+  return errors.map((error) => {
+    let customMessage
+    const hasRuleFieldMessage = _.has(settings, `rules.${error.field}.${error.validation}`)
+
+    // if message not defined in rules object: get from customMessages
+    if (!hasRuleFieldMessage) {
+      customMessage = _.get(
+        customMessages,
+        `${error.field}.${error.validation}`,
+        customMessages[error.validation]
+      )
+    }
+
+    const compiledMessage = _.template(customMessage ?? error.message);
+    error.message = compiledMessage({ 'field': error.field })
+    return error
+  })
+}
+
 const resolveSettings = (settings, ignoreRequired) => {
   const { fields, messages } = settings.rules ? resolveRules(settings.rules, ignoreRequired) : { fields: {}, messages: {} }
   return {
@@ -106,7 +130,7 @@ const resolveModule = async (ctx, module) => {
   const { rules, messages } = resolveSettings(settings, ignoreRequired)
   // remove rules that doesn't have any validation
   for (const rule in rules) {
-    if (rules[rule].legnth == 0) delete rules[rule]
+    if (rules[rule].length == 0) delete rules[rule]
   }
   // Try to validate inputs applying rules
   try {
@@ -124,7 +148,7 @@ const resolveModule = async (ctx, module) => {
       strapi.log.error(error.message)
       ctx.badImplementation(error.message)
     } else {
-      ctx.badRequest(settings.message || "Invalid input data", error)
+      ctx.badRequest(settings.message || "Invalid input data", resolveErrorMessages(error, settings))
     }
     return ctx
   }
