@@ -106,7 +106,7 @@ const resolveModule = async (ctx, module) => {
   const { rules, messages } = resolveSettings(settings, ignoreRequired)
   // remove rules that doesn't have any validation
   for (const rule in rules) {
-    if (rules[rule].legnth == 0) delete rules[rule]
+    if (rules[rule].length == 0) delete rules[rule]
   }
   // Try to validate inputs applying rules
   try {
