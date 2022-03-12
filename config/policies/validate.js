@@ -31,15 +31,15 @@ const removeRule = (rules, rule) => {
   rules.indexOf(rule) !== -1 && rules.splice(rules.indexOf(rule), 1)
 }
 
-const resolveSettings = (settings, ignoreRequired) => {
-  const { fields, messages } = settings.rules ? resolveRules(settings.rules, ignoreRequired) : { fields: {}, messages: {} }
+const resolveSettings = (settings, ignoreRequired, ignoreRequiredWhen, ignoreRequiredIf) => {
+  const { fields, messages } = settings.rules ? resolveRules(settings.rules, ignoreRequired, ignoreRequiredWhen, ignoreRequiredIf) : { fields: {}, messages: {} }
   return {
     rules: fields,
     messages: messages
   }
 }
 
-const resolveRules = (rules, ignoreRequired) => {
+const resolveRules = (rules, ignoreRequired, ignoreRequiredWhen, ignoreRequiredIf) => {
   const fields = {}
   const messages = {}
   for (const rule in rules) {
@@ -52,9 +52,13 @@ const resolveRules = (rules, ignoreRequired) => {
       const ref = appendRules.shift() // remove the first element (the reference) and get the rest (rules)
       if (!appendRules.includes("object")) appendRules.push("object")
       if (appendRules.includes("required") && ignoreRequired == true) removeRule(appendRules, "required")
+      const requiredWhen = appendRules.find((appendRule) => appendRule.startsWith("required_when"))
+      if (requiredWhen && ignoreRequiredWhen == true) removeRule(appendRules, requiredWhen)
+      const requiredIf = appendRules.find((appendRule) => appendRule.startsWith("required_if"))
+      if (requiredIf && ignoreRequiredIf == true) removeRule(appendRules, requiredIf)
       fields[rule] = appendRules.join("|")
       if (settings = _.get(strapi, ref)) {
-        const { rules: deepRules, messages: deepMessages } = resolveSettings(settings, ignoreRequired)
+        const { rules: deepRules, messages: deepMessages } = resolveSettings(settings, ignoreRequired, ignoreRequiredWhen, ignoreRequiredIf)
         if (Object.keys(deepRules).length > 0) {
           for (const deepRule in deepRules) {
             fields[`${rule}.${deepRule}`] = deepRules[deepRule]
@@ -67,10 +71,18 @@ const resolveRules = (rules, ignoreRequired) => {
     } else if (_.isArray(rules[rule])) {
       const appendRules = rules[rule]
       if (appendRules.includes("required") && ignoreRequired == true) removeRule(appendRules, "required")
+      const requiredWhen = appendRules.find((appendRule) => appendRule.startsWith("required_when"))
+      if (requiredWhen && ignoreRequiredWhen == true) removeRule(appendRules, requiredWhen)
+      const requiredIf = appendRules.find((appendRule) => appendRule.startsWith("required_if"))
+      if (requiredIf && ignoreRequiredIf == true) removeRule(appendRules, requiredIf)
       if (appendRules.length > 0) fields[rule] = appendRules.join("|")
     } else if (_.isObject(rules[rule])) {
       const appendRules = Object.keys(rules[rule])
       if (appendRules.includes("required") && ignoreRequired == true) removeRule(appendRules, "required")
+      const requiredWhen = appendRules.find((appendRule) => appendRule.startsWith("required_when"))
+      if (requiredWhen && ignoreRequiredWhen == true) removeRule(appendRules, requiredWhen)
+      const requiredIf = appendRules.find((appendRule) => appendRule.startsWith("required_if"))
+      if (requiredIf && ignoreRequiredIf == true) removeRule(appendRules, requiredIf)
       if (appendRules.length > 0) {
         _.forEach(appendRules, (ruleItem) => {
           messages[`${rule}.${ruleItem.split(/:(.+)/)[0]}`] = rules[rule][ruleItem]
@@ -100,10 +112,12 @@ const resolveModule = async (ctx, module) => {
   if (!route) return "the validation route does not exists."
   const validation = _.get(route, "config.validate")
   const ignoreRequired = _.get(route, "config.validate_ignore_required", false)
+  const ignoreRequiredWhen = _.get(route, "config.validate_ignore_required_when", false)
+  const ignoreRequiredIf = _.get(route, "config.validate_ignore_required_if", false)
   const settings = _.isString(validation) ? _.get(strapi, validation) : _.isObject(validation) ? validation : undefined
   // Check if settings variable is a valid validator to continue
   if (!settings) return "validation settings is not valid."
-  const { rules, messages } = resolveSettings(settings, ignoreRequired)
+  const { rules, messages } = resolveSettings(settings, ignoreRequired, ignoreRequiredWhen, ignoreRequiredIf)
   // remove rules that doesn't have any validation
   for (const rule in rules) {
     if (rules[rule].legnth == 0) delete rules[rule]
